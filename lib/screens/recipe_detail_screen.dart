@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/helpers/app_localizations.dart';
+import '../helpers/app_localizations.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -28,7 +28,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.data['Judul Resep'] ?? 'Detail Resep'),
-        backgroundColor: const Color(0xFF7B3F00),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -45,7 +45,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     width: double.infinity,
                     height: 250,
                     color: Colors.grey[300],
-                    child: Icon(Icons.restaurant_menu, size: 80, color: Colors.grey),
+                    child: Icon(Icons.restaurant_menu, size: 80, color: Theme.of(context).colorScheme.primary),
                   ),
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -54,10 +54,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 children: [
                   Text(
                     widget.data['Judul Resep'] ?? '',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 28,
-                      color: Color(0xFF7B3F00),
+                      color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(204),
                     ),
                   ),
                   const SizedBox(height: 12),

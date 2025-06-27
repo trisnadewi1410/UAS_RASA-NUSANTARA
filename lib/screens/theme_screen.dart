@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../helpers/app_localizations.dart';
 
 class ThemeScreen extends StatelessWidget {
   const ThemeScreen({super.key});
@@ -12,7 +13,7 @@ class ThemeScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Tema Aplikasi'),
-            backgroundColor: const Color(0xFF7B3F00),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
           ),
           body: ListView(
@@ -29,7 +30,7 @@ class ThemeScreen extends StatelessWidget {
                     appProvider.toggleDarkMode();
                   }
                 },
-                secondary: const Icon(Icons.light_mode, color: Color(0xFF7B3F00)),
+                secondary: Icon(Icons.light_mode, color: Theme.of(context).colorScheme.primary),
               ),
               RadioListTile<String>(
                 title: const Text('Mode Gelap'),
@@ -41,7 +42,7 @@ class ThemeScreen extends StatelessWidget {
                     appProvider.toggleDarkMode();
                   }
                 },
-                secondary: const Icon(Icons.dark_mode, color: Color(0xFF7B3F00)),
+                secondary: Icon(Icons.dark_mode, color: Theme.of(context).colorScheme.primary),
               ),
               RadioListTile<String>(
                 title: const Text('Mengikuti Sistem'),
@@ -54,7 +55,7 @@ class ThemeScreen extends StatelessWidget {
                     const SnackBar(content: Text('Fitur akan segera hadir')),
                   );
                 },
-                secondary: const Icon(Icons.settings_system_daydream, color: Color(0xFF7B3F00)),
+                secondary: Icon(Icons.settings_system_daydream, color: Theme.of(context).colorScheme.primary),
               ),
               
               const Divider(),
@@ -72,8 +73,9 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 title: const Text('Coklat (Default)'),
                 subtitle: const Text('Warna tema utama aplikasi'),
-                trailing: const Icon(Icons.check, color: Color(0xFF7B3F00)),
+                trailing: appProvider.themeColor == 'brown' ? const Icon(Icons.check, color: Color(0xFF7B3F00)) : null,
                 onTap: () {
+                  appProvider.setThemeColor('brown');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Warna tema berhasil diubah')),
                   );
@@ -90,9 +92,11 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 title: const Text('Hijau'),
                 subtitle: const Text('Tema hijau segar'),
+                trailing: appProvider.themeColor == 'green' ? Icon(Icons.check, color: Colors.green) : null,
                 onTap: () {
+                  appProvider.setThemeColor('green');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur akan segera hadir')),
+                    const SnackBar(content: Text('Warna tema berhasil diubah')),
                   );
                 },
               ),
@@ -107,9 +111,11 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 title: const Text('Biru'),
                 subtitle: const Text('Tema biru tenang'),
+                trailing: appProvider.themeColor == 'blue' ? Icon(Icons.check, color: Colors.blue) : null,
                 onTap: () {
+                  appProvider.setThemeColor('blue');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur akan segera hadir')),
+                    const SnackBar(content: Text('Warna tema berhasil diubah')),
                   );
                 },
               ),
@@ -124,9 +130,11 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 title: const Text('Ungu'),
                 subtitle: const Text('Tema ungu elegan'),
+                trailing: appProvider.themeColor == 'purple' ? Icon(Icons.check, color: Colors.purple) : null,
                 onTap: () {
+                  appProvider.setThemeColor('purple');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur akan segera hadir')),
+                    const SnackBar(content: Text('Warna tema berhasil diubah')),
                   );
                 },
               ),
@@ -173,7 +181,7 @@ class ThemeScreen extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7B3F00),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Tombol Contoh'),

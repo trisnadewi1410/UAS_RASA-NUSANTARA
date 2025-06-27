@@ -21,7 +21,7 @@ class AllRecipesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)?.translate('all_recipes') ?? 'All Recipes'),
-        backgroundColor: const Color(0xFF7B3F00),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       backgroundColor: Theme.of(context).colorScheme.background,
       body: StreamBuilder<QuerySnapshot>(

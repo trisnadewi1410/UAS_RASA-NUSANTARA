@@ -1,6 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import './settings_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rasa_nusantara/helpers/app_localizations.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initializeNotifications() async {
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+}
+
+Future<void> showLocalNotification(String title, String body) async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails('default_channel', 'Default',
+          channelDescription: 'Default channel for app notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: false);
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    title,
+    body,
+    platformChannelSpecifics,
+    payload: 'item x',
+  );
+}
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -17,13 +47,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   final String _reminderTime = '18:00';
 
   @override
+  void initState() {
+    super.initState();
+    _loadNotificationPrefs();
+  }
+
+  Future<void> _loadNotificationPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _newRecipeNotification = prefs.getBool('notif_new_recipe') ?? true;
+      _reminderNotification = prefs.getBool('notif_reminder') ?? true;
+      _updateNotification = prefs.getBool('notif_update') ?? true;
+      _promoNotification = prefs.getBool('notif_promo') ?? false;
+    });
+  }
+
+  Future<void> _saveNotificationPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notif_new_recipe', _newRecipeNotification);
+    await prefs.setBool('notif_reminder', _reminderNotification);
+    await prefs.setBool('notif_update', _updateNotification);
+    await prefs.setBool('notif_promo', _promoNotification);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, appProvider, child) {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Pengaturan Notifikasi'),
-            backgroundColor: const Color(0xFF7B3F00),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
           ),
           body: ListView(
@@ -31,12 +85,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               // Main Notification Toggle
               const _SectionHeader(title: 'Notifikasi Umum'),
               SwitchListTile(
-                secondary: const Icon(Icons.notifications, color: Color(0xFF7B3F00)),
+                secondary: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary),
                 title: const Text('Aktifkan Notifikasi'),
                 subtitle: const Text('Mengaktifkan semua notifikasi aplikasi'),
                 value: appProvider.notificationsEnabled,
-                onChanged: (val) {
-                  appProvider.toggleNotifications();
+                onChanged: (value) async {
+                  await appProvider.toggleNotifications();
+                  // Navigasi ke SettingsScreen (replace agar tidak stack)
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                    );
+                  }
                 },
               ),
               
@@ -46,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 // Notification Types
                 const _SectionHeader(title: 'Jenis Notifikasi'),
                 SwitchListTile(
-                  secondary: const Icon(Icons.add_circle, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Resep Baru'),
                   subtitle: const Text('Notifikasi ketika ada resep baru dari komunitas'),
                   value: _newRecipeNotification,
@@ -54,10 +115,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     setState(() {
                       _newRecipeNotification = val;
                     });
+                    _saveNotificationPrefs();
                   },
                 ),
                 SwitchListTile(
-                  secondary: const Icon(Icons.alarm, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.alarm, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Pengingat Memasak'),
                   subtitle: const Text('Pengingat untuk memasak sesuai jadwal'),
                   value: _reminderNotification,
@@ -65,10 +127,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     setState(() {
                       _reminderNotification = val;
                     });
+                    _saveNotificationPrefs();
                   },
                 ),
                 SwitchListTile(
-                  secondary: const Icon(Icons.update, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.update, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Pembaruan Aplikasi'),
                   subtitle: const Text('Notifikasi ketika ada pembaruan aplikasi'),
                   value: _updateNotification,
@@ -76,10 +139,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     setState(() {
                       _updateNotification = val;
                     });
+                    _saveNotificationPrefs();
                   },
                 ),
                 SwitchListTile(
-                  secondary: const Icon(Icons.local_offer, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.local_offer, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Promo & Penawaran'),
                   subtitle: const Text('Notifikasi promo dan penawaran khusus'),
                   value: _promoNotification,
@@ -87,6 +151,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     setState(() {
                       _promoNotification = val;
                     });
+                    _saveNotificationPrefs();
                   },
                 ),
                 
@@ -95,7 +160,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 // Reminder Settings
                 const _SectionHeader(title: 'Pengaturan Pengingat'),
                 ListTile(
-                  leading: const Icon(Icons.access_time, color: Color(0xFF7B3F00)),
+                  leading: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Waktu Pengingat'),
                   subtitle: Text('Setiap hari pukul $_reminderTime'),
                   onTap: () {
@@ -103,7 +168,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.calendar_today, color: Color(0xFF7B3F00)),
+                  leading: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Hari Pengingat'),
                   subtitle: const Text('Senin - Jumat'),
                   onTap: () {
@@ -116,7 +181,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 // Sound Settings
                 const _SectionHeader(title: 'Pengaturan Suara'),
                 ListTile(
-                  leading: const Icon(Icons.volume_up, color: Color(0xFF7B3F00)),
+                  leading: Icon(Icons.volume_up, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Suara Notifikasi'),
                   subtitle: const Text('Default'),
                   onTap: () {
@@ -124,7 +189,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   },
                 ),
                 SwitchListTile(
-                  secondary: const Icon(Icons.vibration, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.vibration, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Getaran'),
                   subtitle: const Text('Aktifkan getaran saat notifikasi'),
                   value: true,
@@ -138,7 +203,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 // Quiet Hours
                 const _SectionHeader(title: 'Jam Tenang'),
                 SwitchListTile(
-                  secondary: const Icon(Icons.bedtime, color: Color(0xFF7B3F00)),
+                  secondary: Icon(Icons.bedtime, color: Theme.of(context).colorScheme.primary),
                   title: const Text('Aktifkan Jam Tenang'),
                   subtitle: const Text('Tidak ada notifikasi dari 22:00 - 07:00'),
                   value: false,
@@ -153,7 +218,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               // Help Section
               const _SectionHeader(title: 'Bantuan'),
               ListTile(
-                leading: const Icon(Icons.help, color: Color(0xFF7B3F00)),
+                leading: Icon(Icons.help, color: Theme.of(context).colorScheme.primary),
                 title: const Text('Cara Mengatur Notifikasi'),
                 subtitle: const Text('Panduan penggunaan'),
                 onTap: () {
@@ -161,7 +226,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.bug_report, color: Color(0xFF7B3F00)),
+                leading: Icon(Icons.bug_report, color: Theme.of(context).colorScheme.primary),
                 title: const Text('Laporkan Masalah'),
                 subtitle: const Text('Jika notifikasi tidak berfungsi'),
                 onTap: () {
@@ -170,6 +235,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
               
               const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    if (prefs.getBool('notif_promo') ?? false) {
+                      await showLocalNotification('Promo!', 'Ada promo baru untukmu!');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Notifikasi promo dinonaktifkan!')),
+                      );
+                    }
+                  },
+                  child: const Text('Test Notifikasi Promo'),
+                ),
+              ),
             ],
           ),
         );
@@ -305,10 +387,10 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF7B3F00),
+          color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(204),
         ),
       ),
     );

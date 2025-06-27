@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/helpers/app_localizations.dart';
+import '../helpers/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import 'edit_profile_screen.dart';
 import 'notifications_screen.dart';
 import 'language_screen.dart';
 import 'theme_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -55,16 +56,16 @@ class SettingsScreen extends StatelessWidget {
                 title: Text(AppLocalizations.of(context)?.translate('dark_mode') ?? 'Dark Mode'),
                 subtitle: Text(AppLocalizations.of(context)?.translate('activate_dark_theme') ?? 'Activate dark theme'),
                 value: appProvider.isDarkMode,
-                onChanged: (value) {
-                  appProvider.toggleDarkMode();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.font_download_outlined),
-                title: Text(AppLocalizations.of(context)?.translate('font_size') ?? 'Font Size'),
-                subtitle: Text('${appProvider.fontSize.toInt()}px'),
-                onTap: () {
-                  _showFontSizeDialog(context, appProvider);
+                onChanged: (value) async {
+                  await appProvider.toggleDarkMode();
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  }
                 },
               ),
               _buildSectionHeader(context, AppLocalizations.of(context)?.translate('language') ?? 'Language'),
@@ -119,9 +120,9 @@ class SettingsScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.clear_all, color: Color(0xFF7B3F00)),
-                title: const Text('Bersihkan Cache'),
-                subtitle: const Text('Hapus data sementara'),
+                leading: Icon(Icons.clear_all, color: Theme.of(context).colorScheme.primary),
+                title: Text(AppLocalizations.of(context)?.translate('clear_cache') ?? 'Bersihkan Cache'),
+                subtitle: Text(AppLocalizations.of(context)?.translate('clear_cache_subtitle') ?? 'Hapus data sementara'),
                 onTap: () {
                   _showClearCacheDialog(context);
                 },
@@ -129,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
               _buildSectionHeader(context, AppLocalizations.of(context)?.translate('account') ?? 'Account'),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Keluar', style: TextStyle(color: Colors.red)),
+                title: Text(AppLocalizations.of(context)?.translate('logout') ?? 'Keluar', style: const TextStyle(color: Colors.red)),
                 onTap: () {
                   _showLogoutDialog(context, appProvider);
                 },
@@ -154,76 +155,37 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showFontSizeDialog(BuildContext context, AppProvider appProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ukuran Font'),
-        content: StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Contoh Teks',
-                  style: TextStyle(fontSize: appProvider.fontSize),
-                ),
-                const SizedBox(height: 20),
-                Slider(
-                  value: appProvider.fontSize,
-                  min: 12.0,
-                  max: 20.0,
-                  divisions: 8,
-                  label: '${appProvider.fontSize.toInt()}px',
-                  onChanged: (value) {
-                    setState(() {
-                      appProvider.setFontSize(value);
-                    });
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Ukuran font berhasil diubah')),
-              );
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showClearCacheDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Bersihkan Cache'),
-        content: const Text('Apakah Anda yakin ingin membersihkan cache aplikasi?'),
+        title: Text(AppLocalizations.of(context)?.translate('clear_cache') ?? 'Bersihkan Cache'),
+        content: Text(AppLocalizations.of(context)?.translate('clear_cache_confirm') ?? 'Apakah Anda yakin ingin membersihkan cache aplikasi?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text(AppLocalizations.of(context)?.translate('clear_cache_cancel') ?? 'Batal'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cache berhasil dibersihkan')),
-              );
+              // Hapus cache: SharedPreferences kecuali data login
+              final prefs = await SharedPreferences.getInstance();
+              // Simpan data login
+              final userId = prefs.getInt('userId');
+              final username = prefs.getString('username');
+              await prefs.clear();
+              // Restore data login
+              if (userId != null) await prefs.setInt('userId', userId);
+              if (username != null) await prefs.setString('username', username);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(AppLocalizations.of(context)?.translate('clear_cache_success') ?? 'Cache berhasil dibersihkan')),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Bersihkan', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)?.translate('clear_cache') ?? 'Bersihkan', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -234,12 +196,12 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Keluar'),
-        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        title: Text(AppLocalizations.of(context)?.translate('logout') ?? 'Keluar'),
+        content: Text(AppLocalizations.of(context)?.translate('logout_confirm') ?? 'Apakah Anda yakin ingin keluar dari aplikasi?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text(AppLocalizations.of(context)?.translate('logout_cancel') ?? 'Batal'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -253,7 +215,7 @@ class SettingsScreen extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Keluar', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)?.translate('logout') ?? 'Keluar', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -65,5 +65,17 @@
     "search_recipes": "Cari resep...",
     "popular_recipes": "Resep Populer",
     "no_popular_recipes": "Belum ada resep populer.",
-    "no_recipes_found": "Resep tidak ditemukan."
+    "no_recipes_found": "Resep tidak ditemukan.",
+    "clear_cache": "Bersihkan Cache",
+    "clear_cache_subtitle": "Hapus data sementara",
+    "clear_cache_confirm": "Apakah Anda yakin ingin membersihkan cache aplikasi?",
+    "clear_cache_success": "Cache berhasil dibersihkan",
+    "clear_cache_cancel": "Batal",
+    "logout_confirm": "Apakah Anda yakin ingin keluar dari aplikasi?",
+    "logout_cancel": "Batal",
+    "culinary_map": "Peta Kuliner",
+    "map": "Peta Kuliner Indonesia",
+    "map_instruction": "Tap marker untuk melihat resep dari provinsi tersebut",
+    "map_no_recipe": "Belum ada resep untuk provinsi ini",
+    "map_recipe_from": "Resep dari"
 } 

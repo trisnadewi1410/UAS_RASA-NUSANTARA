@@ -45,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const Divider(height: 32),
           ListTile(
-            leading: const Icon(Icons.settings, color: Color(0xFF7B3F00)),
+            leading: Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
             title: Text(AppLocalizations.of(context)?.translate('settings') ?? 'Settings'),
             onTap: () {
               Navigator.push(
@@ -55,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.help_outline, color: Color(0xFF7B3F00)),
+            leading: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary),
             title: Text(AppLocalizations.of(context)?.translate('help') ?? 'Help'),
             onTap: () {
               Navigator.push(
@@ -65,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.info_outline, color: Color(0xFF7B3F00)),
+            leading: Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
             title: Text(AppLocalizations.of(context)?.translate('about_app') ?? 'About App'),
             onTap: () {
               showAboutDialog(

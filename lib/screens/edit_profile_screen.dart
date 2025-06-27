@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../helpers/app_localizations.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -22,6 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -33,12 +38,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _loadUserData() {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
-    final currentUser = appProvider.userProvider.currentUser;
-    
-    if (currentUser != null) {
-      _usernameController.text = currentUser.username;
-      _emailController.text = 'user@example.com'; // Dummy email for now
-    }
   }
 
   @override
@@ -49,6 +48,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
   }
 
   @override
@@ -82,7 +90,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Profile Picture Section
-                  _buildProfilePictureSection(appProvider),
+                  Center(
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 56,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
+                          child: _profileImage == null
+                              ? Icon(Icons.person, size: 56, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: InkWell(
+                            onTap: _pickImage,
+                            borderRadius: BorderRadius.circular(24),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_profileImage == null)
+                    const Text('Pilih foto profil', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                   
                   const SizedBox(height: 32),
                   
@@ -109,64 +147,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildProfilePictureSection(AppProvider appProvider) {
-    final currentUser = appProvider.userProvider.currentUser;
-    final hasImage = false;
-
-    return Column(
-      children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-              backgroundImage: null,
-              child: !hasImage
-                  ? Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    )
-                  : null,
-            ),
-            if (_isEditing)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF7B3F00),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (_isEditing)
-          ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur upload foto akan segera hadir')),
-              );
-            },
-            icon: const Icon(Icons.photo_camera),
-            label: const Text('Ganti Foto Profil'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7B3F00),
-              foregroundColor: Colors.white,
-            ),
-          ),
-      ],
     );
   }
 

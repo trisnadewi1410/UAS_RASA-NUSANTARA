@@ -20,7 +20,7 @@ class AppProvider with ChangeNotifier {
   bool _isDarkMode = false;
   bool _notificationsEnabled = true;
   String _language = 'id'; // 'id' for Indonesian, 'en' for English
-  double _fontSize = 14.0;
+  String _themeColor = 'brown'; // default
 
   // Getters
   bool get isInitialized => _isInitialized;
@@ -29,7 +29,14 @@ class AppProvider with ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   bool get notificationsEnabled => _notificationsEnabled;
   String get language => _language;
-  double get fontSize => _fontSize;
+  String get themeColor => _themeColor;
+
+  int _selectedTabIndex = 0;
+  int get selectedTabIndex => _selectedTabIndex;
+  void setTabIndex(int index) {
+    _selectedTabIndex = index;
+    notifyListeners();
+  }
 
   // Initialize app and check login status
   Future<void> initializeApp() async {
@@ -40,7 +47,7 @@ class AppProvider with ChangeNotifier {
       _isDarkMode = prefs.getBool('isDarkMode') ?? false;
       _notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
       _language = prefs.getString('language') ?? 'id';
-      _fontSize = prefs.getDouble('fontSize') ?? 14.0;
+      _themeColor = prefs.getString('themeColor') ?? 'brown';
       
       final userId = prefs.getInt('userId');
       final username = prefs.getString('username');
@@ -66,6 +73,7 @@ class AppProvider with ChangeNotifier {
     _isDarkMode = !_isDarkMode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', _isDarkMode);
+    setTabIndex(3);
     notifyListeners();
   }
 
@@ -83,10 +91,10 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setFontSize(double size) async {
-    _fontSize = size;
+  Future<void> setThemeColor(String color) async {
+    _themeColor = color;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('fontSize', size);
+    await prefs.setString('themeColor', color);
     notifyListeners();
   }
 
@@ -139,6 +147,7 @@ class AppProvider with ChangeNotifier {
     if (userProvider.currentUser != null) {
       await recipeProvider.loadUserRecipes(userProvider.currentUser!.id!);
       await recipeProvider.loadAllRecipes();
+      debugPrint('Data berhasil di-refresh dari database lokal.');
     }
   }
 

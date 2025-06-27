@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_application_1/models/recipe_model.dart';
-import 'package:flutter_application_1/models/user_model.dart';
+import 'package:rasa_nusantara/models/recipe_model.dart';
+import 'package:rasa_nusantara/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

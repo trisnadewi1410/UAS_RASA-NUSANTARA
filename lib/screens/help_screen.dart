@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../helpers/app_localizations.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});

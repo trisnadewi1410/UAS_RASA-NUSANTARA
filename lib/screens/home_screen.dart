@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/helpers/app_localizations.dart';
-import 'package:flutter_application_1/screens/recipe_detail_screen.dart';
+import '../helpers/app_localizations.dart';
+import 'package:rasa_nusantara/screens/recipe_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import 'all_recipes_screen.dart';
 import '../models/recipe_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'map_screen.dart';
+import 'profile_screen.dart';
+import 'add_edit_recipe_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -89,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF7B3F00),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Color(0xFFF5E9DA)),
       ),
       body: Padding(
@@ -97,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -107,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
@@ -128,6 +133,22 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildContent(),
             ),
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MapScreen(),
+            ),
+          );
+        },
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        icon: const Icon(Icons.map, color: Colors.white),
+        label: Text(
+          AppLocalizations.of(context)?.translate('culinary_map') ?? 'Peta Kuliner',
+          style: const TextStyle(color: Colors.white),
         ),
       ),
     );
@@ -202,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       )
                                     : Container(
                                         color: Colors.grey[200],
-                                        child: const Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
+                                        child: Icon(Icons.restaurant_menu, size: 80, color: Theme.of(context).colorScheme.primary),
                                       ),
                               ),
                               Expanded(
@@ -290,3 +311,44 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
+
+final Map<String, LatLng> originCoordinates = {
+  'aceh': const LatLng(4.695135, 96.749397),
+  'sumatera utara': const LatLng(2.115354, 99.545097),
+  'sumatera barat': const LatLng(-0.739939, 100.800003),
+  'riau': const LatLng(0.293347, 101.706829),
+  'kepulauan riau': const LatLng(3.945651, 108.142867),
+  'jambi': const LatLng(-1.485183, 102.438057),
+  'bengkulu': const LatLng(-3.792845, 102.260764),
+  'sumatera selatan': const LatLng(-3.319437, 103.914399),
+  'bangka belitung': const LatLng(-2.741051, 106.440587),
+  'lampung': const LatLng(-4.558584, 105.406807),
+  'banten': const LatLng(-6.405817, 106.064018),
+  'dki jakarta': const LatLng(-6.208763, 106.845599),
+  'jawa barat': const LatLng(-6.90389, 107.61861),
+  'jawa tengah': const LatLng(-7.150975, 110.140259),
+  'diy': const LatLng(-7.875384, 110.426208), // Daerah Istimewa Yogyakarta
+  'jawa timur': const LatLng(-7.536064, 112.238401),
+  'bali': const LatLng(-8.409518, 115.188919),
+  'nusa tenggara barat': const LatLng(-8.652933, 117.361647),
+  'nusa tenggara timur': const LatLng(-8.657381, 121.079371),
+  'kalimantan barat': const LatLng(-0.278778, 111.475285),
+  'kalimantan tengah': const LatLng(-1.681487, 113.382354),
+  'kalimantan selatan': const LatLng(-3.092641, 115.283758),
+  'kalimantan timur': const LatLng(0.538658, 116.419389),
+  'kalimantan utara': const LatLng(3.073092, 116.041388),
+  'sulawesi utara': const LatLng(1.493049, 124.841253),
+  'sulawesi tengah': const LatLng(-1.430025, 121.445617),
+  'sulawesi selatan': const LatLng(-3.668799, 119.974053),
+  'sulawesi tenggara': const LatLng(-4.14491, 122.174605),
+  'gorontalo': const LatLng(0.699937, 122.446723),
+  'sulawesi barat': const LatLng(-2.844137, 119.232078),
+  'maluku': const LatLng(-3.238462, 130.145273),
+  'maluku utara': const LatLng(1.570999, 127.808769),
+  'papua': const LatLng(-4.269928, 138.080353),
+  'papua barat': const LatLng(-1.336115, 133.174716),
+  'papua selatan': const LatLng(-7.6674, 139.7020),
+  'papua tengah': const LatLng(-3.9167, 137.5833),
+  'papua pegunungan': const LatLng(-4.0833, 138.8333),
+  'papua barat daya': const LatLng(-1.0, 132.0),
+}; 

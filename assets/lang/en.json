@@ -65,5 +65,17 @@
     "search_recipes": "Search for recipes...",
     "popular_recipes": "Popular Recipes",
     "no_popular_recipes": "No popular recipes yet.",
-    "no_recipes_found": "No recipes found."
+    "no_recipes_found": "No recipes found.",
+    "clear_cache": "Clear Cache",
+    "clear_cache_subtitle": "Remove temporary data",
+    "clear_cache_confirm": "Are you sure you want to clear the app cache?",
+    "clear_cache_success": "Cache cleared successfully",
+    "clear_cache_cancel": "Cancel",
+    "logout_confirm": "Are you sure you want to logout?",
+    "logout_cancel": "Cancel",
+    "culinary_map": "Culinary Map",
+    "map": "Indonesian Culinary Map",
+    "map_instruction": "Tap marker to see recipes from that province",
+    "map_no_recipe": "No recipes for this province yet",
+    "map_recipe_from": "Recipes from"
 } 

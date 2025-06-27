@@ -7,16 +7,32 @@ import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/all_recipes_screen.dart';
 import 'screens/add_edit_recipe_screen.dart';
-import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/profile_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'helpers/app_localizations.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initializeNotifications() async {
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  await initializeNotifications();
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,11 +45,34 @@ class MyApp extends StatelessWidget {
       child: Consumer<AppProvider>(
         builder: (context, appProvider, _) {
           // Dynamic theme color
-          final Color seedColor = Color(0xFF7B3F00);
+          Color getSeedColor(String color) {
+            switch (color) {
+              case 'green':
+                return Colors.green;
+              case 'blue':
+                return Colors.blue;
+              case 'purple':
+                return Colors.purple;
+              default:
+                return const Color(0xFF7B3F00);
+            }
+          }
+          final Color seedColor = getSeedColor(appProvider.themeColor);
           final Color primaryColor = seedColor;
-          final Color secondaryColor = Color(0xFFE07A5F);
-          final Color backgroundColor = Color(0xFFF5E9DA);
-          final double fontSize = appProvider.fontSize;
+          final Color secondaryColor = appProvider.themeColor == 'green'
+              ? Colors.lightGreen
+              : appProvider.themeColor == 'blue'
+                  ? Colors.lightBlueAccent
+                  : appProvider.themeColor == 'purple'
+                      ? Colors.deepPurpleAccent
+                      : const Color(0xFFE07A5F);
+          final Color backgroundColor = appProvider.themeColor == 'green'
+              ? const Color(0xFFE8F5E9)
+              : appProvider.themeColor == 'blue'
+                  ? const Color(0xFFE3F2FD)
+                  : appProvider.themeColor == 'purple'
+                      ? const Color(0xFFF3E5F5)
+                      : const Color(0xFFF5E9DA);
 
           ThemeData lightTheme = ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -49,12 +88,12 @@ class MyApp extends StatelessWidget {
               onSurface: Color(0xFF3E2723),
             ),
             textTheme: GoogleFonts.poppinsTextTheme(
-              Theme.of(context).textTheme.apply(fontSizeFactor: fontSize / 14.0),
+              Theme.of(context).textTheme,
             ).apply(bodyColor: Color(0xFF3E2723)),
             scaffoldBackgroundColor: backgroundColor,
             fontFamily: 'Roboto',
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF7B3F00),
+            appBarTheme: AppBarTheme(
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
               elevation: 2,
               shadowColor: Colors.black26,
@@ -79,7 +118,7 @@ class MyApp extends StatelessWidget {
                 borderSide: BorderSide(color: secondaryColor, width: 2),
               ),
               filled: true,
-              fillColor: Color(0xFFF9F6F2),
+              fillColor: const Color(0xFFF9F6F2),
             ),
             cardTheme: CardTheme(
               elevation: 4,
@@ -88,9 +127,9 @@ class MyApp extends StatelessWidget {
               ),
               color: Colors.white,
             ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
               backgroundColor: Colors.white,
-              selectedItemColor: Color(0xFF7B3F00),
+              selectedItemColor: primaryColor,
               unselectedItemColor: Colors.grey,
               elevation: 8,
               type: BottomNavigationBarType.fixed,
@@ -103,19 +142,19 @@ class MyApp extends StatelessWidget {
               seedColor: primaryColor,
               primary: primaryColor,
               secondary: secondaryColor,
-              background: Color(0xFF232323),
-              surface: Color(0xFF232323),
+              background: const Color(0xFF232323),
+              surface: const Color(0xFF232323),
               onPrimary: Colors.white,
               onSecondary: Colors.white,
               onBackground: Colors.white,
               onSurface: Colors.white,
             ),
             textTheme: GoogleFonts.poppinsTextTheme(
-              ThemeData.dark().textTheme.apply(fontSizeFactor: fontSize / 14.0),
+              ThemeData.dark().textTheme,
             ).apply(bodyColor: Colors.white),
-            scaffoldBackgroundColor: Color(0xFF232323),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF7B3F00),
+            scaffoldBackgroundColor: const Color(0xFF232323),
+            appBarTheme: AppBarTheme(
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
               elevation: 2,
               shadowColor: Colors.black26,
@@ -140,18 +179,18 @@ class MyApp extends StatelessWidget {
                 borderSide: BorderSide(color: secondaryColor, width: 2),
               ),
               filled: true,
-              fillColor: Color(0xFF2C2C2C),
+              fillColor: const Color(0xFF2C2C2C),
             ),
             cardTheme: CardTheme(
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              color: Color(0xFF232323),
+              color: const Color(0xFF232323),
             ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              backgroundColor: Color(0xFF232323),
-              selectedItemColor: Color(0xFFFFAB91),
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              backgroundColor: const Color(0xFF232323),
+              selectedItemColor: primaryColor,
               unselectedItemColor: Colors.grey,
               elevation: 8,
               type: BottomNavigationBarType.fixed,
@@ -199,8 +238,6 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
-
   final List<Widget> _screens = [
     HomeScreen(),
     AllRecipesScreen(),
@@ -210,17 +247,16 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final appProvider = Provider.of<AppProvider>(context);
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _screens),
+      body: IndexedStack(index: appProvider.selectedTabIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
+        currentIndex: appProvider.selectedTabIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          appProvider.setTabIndex(index);
         },
-        selectedItemColor: Color(0xFF7B3F00),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: AppLocalizations.of(context)?.translate('home') ?? 'Home'),
@@ -229,7 +265,7 @@ class _MainNavigationState extends State<MainNavigation> {
             label: AppLocalizations.of(context)?.translate('all_recipes') ?? 'All Recipes',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: AppLocalizations.of(context)?.translate('add') ?? 'Add'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: AppLocalizations.of(context)?.translate('profile') ?? 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: AppLocalizations.of(context)?.translate('profile') ?? 'Profil'),
         ],
       ),
     );
