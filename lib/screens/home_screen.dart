@@ -87,11 +87,15 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      resizeToAvoidBottomInset: true,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView(
+            padding: EdgeInsets.only(
+              top: 8.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               const SizedBox(height: 16),
               Padding(
@@ -123,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               _buildContent(),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -243,8 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Tambah Resep')
-            .where('judul_lowercase', isGreaterThanOrEqualTo: _searchQuery.toLowerCase())
-            .where('judul_lowercase', isLessThanOrEqualTo: '${_searchQuery.toLowerCase()}\uf8ff')
+            .where('search_keywords', arrayContains: _searchQuery.toLowerCase())
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

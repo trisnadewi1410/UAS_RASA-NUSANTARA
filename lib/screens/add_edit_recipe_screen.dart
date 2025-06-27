@@ -158,6 +158,15 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
         await FirebaseFirestore.instance
             .collection('Tambah Resep')
             .add(recipeData);
+        // Reset form setelah tambah
+        _judulResepController.clear();
+        _asalMasakanController.clear();
+        _deskripsiController.clear();
+        _bahanBahanController.clear();
+        _langkahLangkahController.clear();
+        _imageFile = null;
+        _existingImageUrl = null;
+        setState(() {});
       }
 
       if (!mounted) return;
