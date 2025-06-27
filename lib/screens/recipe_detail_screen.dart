@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../helpers/app_localizations.dart';
+import 'package:rasa_nusantara/screens/add_edit_recipe_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -29,6 +32,26 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       appBar: AppBar(
         title: Text(widget.data['Judul Resep'] ?? 'Detail Resep'),
         backgroundColor: Theme.of(context).colorScheme.primary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddEditRecipeScreen(
+                    documentId: widget.documentId,
+                    initialData: widget.data,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _showDeleteConfirmationDialog(context),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -81,6 +104,60 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button!
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)?.translate('confirm_delete') ?? 'Confirm Delete'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(AppLocalizations.of(context)?.translate('confirm_delete_message') ?? 'Are you sure you want to delete this recipe?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context)?.translate('cancel') ?? 'Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context)?.translate('delete') ?? 'Delete'),
+              onPressed: () async {
+                FocusScope.of(context).unfocus(); // Lepaskan fokus keyboard
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('Tambah Resep')
+                      .doc(widget.documentId)
+                      .delete();
+                  
+                  if (!mounted) return;
+                  
+                  final appProvider = Provider.of<AppProvider>(context, listen: false);
+                  appProvider.showSnackBarMessage('Resep berhasil dihapus!');
+                  appProvider.setTabIndex(1); // Pindah ke Semua Resep
+
+                  Navigator.of(dialogContext).pop(); // Tutup dialog
+                  Navigator.of(context).pop(); // Kembali dari detail screen
+                } catch (e) {
+                  // Handle error
+                  Navigator.of(dialogContext).pop();
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal menghapus resep: $e'), backgroundColor: Colors.red),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

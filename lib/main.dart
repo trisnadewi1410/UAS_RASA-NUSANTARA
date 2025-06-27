@@ -247,27 +247,43 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final appProvider = Provider.of<AppProvider>(context);
-    return Scaffold(
-      body: IndexedStack(index: appProvider.selectedTabIndex, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: appProvider.selectedTabIndex,
-        onTap: (index) {
-          appProvider.setTabIndex(index);
-        },
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: AppLocalizations.of(context)?.translate('home') ?? 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.public),
-            label: AppLocalizations.of(context)?.translate('all_recipes') ?? 'All Recipes',
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        // Listener untuk menampilkan SnackBar
+        if (appProvider.snackBarMessage != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(appProvider.snackBarMessage!),
+                backgroundColor: Colors.green,
+              ),
+            );
+            appProvider.clearSnackBarMessage();
+          });
+        }
+
+        return Scaffold(
+          body: IndexedStack(index: appProvider.selectedTabIndex, children: _screens),
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            currentIndex: appProvider.selectedTabIndex,
+            onTap: (index) {
+              appProvider.setTabIndex(index);
+            },
+            selectedItemColor: Theme.of(context).colorScheme.primary,
+            unselectedItemColor: Colors.grey,
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: AppLocalizations.of(context)?.translate('home') ?? 'Home'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.public),
+                label: AppLocalizations.of(context)?.translate('all_recipes') ?? 'All Recipes',
+              ),
+              BottomNavigationBarItem(icon: Icon(Icons.add), label: AppLocalizations.of(context)?.translate('add') ?? 'Add'),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: AppLocalizations.of(context)?.translate('profile') ?? 'Profil'),
+            ],
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.add), label: AppLocalizations.of(context)?.translate('add') ?? 'Add'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: AppLocalizations.of(context)?.translate('profile') ?? 'Profil'),
-        ],
-      ),
+        );
+      },
     );
   }
 }

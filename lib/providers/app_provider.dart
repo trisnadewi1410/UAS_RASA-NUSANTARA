@@ -31,6 +31,19 @@ class AppProvider with ChangeNotifier {
   String get language => _language;
   String get themeColor => _themeColor;
 
+  String? _snackBarMessage;
+  String? get snackBarMessage => _snackBarMessage;
+
+  void showSnackBarMessage(String message) {
+    _snackBarMessage = message;
+    notifyListeners();
+  }
+
+  void clearSnackBarMessage() {
+    _snackBarMessage = null;
+    // No need to notify listeners, as this is a consuming action
+  }
+
   int _selectedTabIndex = 0;
   int get selectedTabIndex => _selectedTabIndex;
   void setTabIndex(int index) {

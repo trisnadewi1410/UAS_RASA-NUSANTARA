@@ -5,6 +5,8 @@ import 'package:rasa_nusantara/helpers/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
 
 const String imgurClientId = 'ca61cb7506ddc25'; // Pastikan Client ID benar
 
@@ -113,9 +115,9 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     String? imageUrl;
     if (_imageFile != null) {
       imageUrl = await _uploadImageToImgur(_imageFile!);
@@ -129,7 +131,6 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
       }
     }
 
-    // Siapkan data untuk disimpan
     final Map<String, dynamic> recipeData = {
       'Asal Masakan': _asalMasakanController.text,
       'Judul Resep': _judulResepController.text,
@@ -137,30 +138,41 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
       'Deskripsi': _deskripsiController.text,
       'Bahan-Bahan': _bahanBahanController.text,
       'Langkah-Langkah': _langkahLangkahController.text,
-      // Jika ada gambar baru, gunakan URL baru. Jika tidak, gunakan URL lama.
       'imageUrl': imageUrl ?? _existingImageUrl,
     };
 
     try {
+      final appProvider = Provider.of<AppProvider>(context, listen: false);
+      final successMessage = widget.documentId != null
+          ? 'Resep berhasil diperbarui!'
+          : 'Resep berhasil disimpan!';
+
       if (widget.documentId != null) {
         // Mode Edit: Update dokumen yang ada
-        await FirebaseFirestore.instance.collection('Tambah Resep').doc(widget.documentId).update(recipeData);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Resep berhasil diperbarui!'), backgroundColor: Colors.green),
-        );
+        await FirebaseFirestore.instance
+            .collection('Tambah Resep')
+            .doc(widget.documentId)
+            .update(recipeData);
       } else {
         // Mode Tambah: Buat dokumen baru
-        await FirebaseFirestore.instance.collection('Tambah Resep').add(recipeData);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Resep berhasil disimpan!'), backgroundColor: Colors.green),
-        );
+        await FirebaseFirestore.instance
+            .collection('Tambah Resep')
+            .add(recipeData);
       }
 
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+      if (!mounted) return;
+
+      // Tampilkan notifikasi melalui provider
+      appProvider.showSnackBarMessage(successMessage);
+
+      // Pindah tab ke "Semua Resep"
+      appProvider.setTabIndex(1);
+
+      // Hanya pop (kembali) jika dalam mode edit.
+      if (widget.documentId != null) {
+        Navigator.of(context).pop();
       }
+      
     } catch (e) {
       debugPrint('Error menyimpan ke Firestore: $e');
       if (mounted) {
