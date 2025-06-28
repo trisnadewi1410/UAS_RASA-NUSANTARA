@@ -14,7 +14,7 @@ class UserProvider with ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _currentUser != null;
 
-  // Login hanya SQLite
+  // Login
   Future<bool> login(String username, String password) async {
     _setLoading(true);
     _clearError();
@@ -39,7 +39,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // Register hanya SQLite
+  // Register
   Future<bool> register(String username, String password) async {
     _setLoading(true);
     _clearError();
